@@ -1,0 +1,40 @@
+{
+  "rootDirectory": "/home/yodak025/Music",
+  "darkMode": true,
+  "profiles": {
+    "mp3": {
+      "name": "MP3 High Compatibility",
+      "description": "Optimized for car audio systems. 192 kbps, maximum compatibility.",
+      "extension": "mp3",
+      "ffmpegArgs": ["-codec:a", "libmp3lame", "-b:a", "192k", "-q:a", "2", "-ac", "2"]
+    },
+    "opus": {
+      "name": "Opus Maximum Compression",
+      "description": "Ultra-high compression with transparent quality. 96 kbps VBR, stereo.",
+      "extension": "opus",
+      "ffmpegArgs": ["-codec:a", "libopus", "-b:a", "96k", "-vbr", "on", "-compression_level", "10", "-ac", "2"]
+    }
+  },
+  "audioExtensions": [
+    ".mp3",
+    ".flac",
+    ".wav",
+    ".m4a",
+    ".aac",
+    ".ogg",
+    ".opus",
+    ".wma",
+    ".aiff",
+    ".ape",
+    ".alac",
+    ".tta",
+    ".wv",
+    ".mpc",
+    ".ac3",
+    ".dts",
+    ".mp2",
+    ".amr",
+    ".au",
+    ".ra"
+  ]
+}
