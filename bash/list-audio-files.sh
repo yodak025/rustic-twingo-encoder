@@ -31,6 +31,23 @@ done
 # Find all audio files recursively
 files=$(find "$TARGET_DIR" -type f \( "${FIND_ARGS[@]}" \) 2>/dev/null | sort)
 
+# Filter out audio files that have matching .cue file
+# (these will be processed separately by the CUE processor)
+filtered_files=""
+while IFS= read -r file; do
+  if [ -n "$file" ]; then
+    # Get base name without extension
+    base="${file%.*}"
+    # Check if .cue exists with same base name
+    if [ ! -f "${base}.cue" ] && [ ! -f "${base}.CUE" ]; then
+      filtered_files="${filtered_files}${file}"$'\n'
+    fi
+  fi
+done <<< "$files"
+
+# Remove empty lines
+files=$(echo -n "$filtered_files" | grep -v '^$')
+
 # Build JSON array
 echo -n '{"files":['
 first=true

@@ -142,3 +142,26 @@ export async function validateFFmpeg() {
     return { installed: false, error: error.message };
   }
 }
+
+/**
+ * Split track from audio file using cue timestamps
+ * @param {string} inputFile - Input audio file
+ * @param {string} outputFile - Output track file
+ * @param {number} startTime - Start time in seconds
+ * @param {number|null} endTime - End time in seconds (null for last track)
+ * @param {string[]} ffmpegArgs - FFmpeg encoding arguments
+ * @param {Object} metadata - Track metadata {title, artist, album, track, date}
+ * @returns {Promise<Object>} Result with success status
+ */
+export async function splitCueTrack(inputFile, outputFile, startTime, endTime, ffmpegArgs, metadata) {
+  const argsString = ffmpegArgs.map(arg => `"${arg}"`).join(',');
+  const endTimeStr = endTime !== null ? String(endTime) : 'end';
+  const metadataJson = JSON.stringify(metadata);
+  
+  const result = await executeScript(
+    'split-cue-track.sh',
+    [inputFile, outputFile, String(startTime), endTimeStr, argsString, metadataJson],
+    600000 // 10 min timeout
+  );
+  return result;
+}

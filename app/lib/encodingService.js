@@ -5,6 +5,7 @@ import {
   copyNonAudioFiles,
   transcodeFile,
   checkDirectoryEmpty,
+  splitCueTrack,
 } from './bashExecutor.js';
 import {
   updateJobStatus,
@@ -12,6 +13,7 @@ import {
   addJobError,
   getJob,
 } from './jobManager.js';
+import { processCueFilesInDirectory } from './cueProcessor.js';
 
 /**
  * Start encoding process for a job
@@ -57,7 +59,7 @@ export async function startEncoding(job) {
       const sourceDir = path.join(rootDirectory, relativeDir);
       const outputDir = path.join(job.outputDirectory, relativeDir);
 
-      // Copy non-audio files first (preserves structure)
+      // Copy non-audio files first (preserves structure, excludes .cue since it's in audioExtensions)
       try {
         await copyNonAudioFiles(sourceDir, outputDir, audioExtensions);
       } catch (error) {
@@ -66,14 +68,46 @@ export async function startEncoding(job) {
         // Continue with other directories (best effort)
       }
 
+      // Process CUE files: extract tracks
+      let cueResults = { extractedTracks: [], processedAudioFiles: [] };
+      try {
+        cueResults = await processCueFilesInDirectory(
+          sourceDir,
+          outputDir,
+          profile,
+          audioExtensions,
+          splitCueTrack
+        );
+      } catch (error) {
+        const errorMsg = `Failed to process CUE files in ${relativeDir}: ${error.message}`;
+        addJobError(jobId, errorMsg);
+      }
+
       // List all audio files in this directory
       try {
         const audioFiles = await listAudioFiles(sourceDir, audioExtensions);
-        allAudioFiles.push(...audioFiles.map(file => ({
+        
+        // Filter out audio files that were processed by CUE
+        const filteredAudioFiles = audioFiles.filter(
+          file => !cueResults.processedAudioFiles.includes(file)
+        );
+
+        // Add regular audio files (not yet processed)
+        allAudioFiles.push(...filteredAudioFiles.map(file => ({
           sourcePath: file,
           sourceDir,
           outputDir,
           relativeDir,
+          alreadyProcessed: false,
+        })));
+
+        // Add extracted tracks from CUE (already processed/transcoded)
+        allAudioFiles.push(...cueResults.extractedTracks.map(file => ({
+          sourcePath: file,
+          sourceDir,
+          outputDir,
+          relativeDir,
+          alreadyProcessed: true,
         })));
       } catch (error) {
         const errorMsg = `Failed to list audio files in ${relativeDir}: ${error.message}`;
@@ -92,16 +126,10 @@ export async function startEncoding(job) {
 
     // Step 3: Transcode all audio files
     for (const fileInfo of allAudioFiles) {
-      const { sourcePath, sourceDir, outputDir } = fileInfo;
+      const { sourcePath, sourceDir, outputDir, alreadyProcessed } = fileInfo;
 
       // Calculate relative path within source directory
       const relativePath = path.relative(sourceDir, sourcePath);
-      const baseName = path.basename(relativePath, path.extname(relativePath));
-      const dirName = path.dirname(relativePath);
-      
-      // Build output path with new extension
-      const outputFileName = `${baseName}.${profile.extension}`;
-      const outputPath = path.join(outputDir, dirName, outputFileName);
 
       // Update progress
       updateJobProgress(jobId, {
@@ -109,6 +137,19 @@ export async function startEncoding(job) {
         processedFiles: totalFilesProcessed,
         totalFiles,
       });
+
+      // Skip transcoding if already processed (CUE tracks)
+      if (alreadyProcessed) {
+        totalFilesProcessed++;
+        continue;
+      }
+
+      const baseName = path.basename(relativePath, path.extname(relativePath));
+      const dirName = path.dirname(relativePath);
+      
+      // Build output path with new extension
+      const outputFileName = `${baseName}.${profile.extension}`;
+      const outputPath = path.join(outputDir, dirName, outputFileName);
 
       // Transcode file
       try {
