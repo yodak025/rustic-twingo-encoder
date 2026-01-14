@@ -422,8 +422,8 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen p-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen" style={{ padding: '3rem' }}>
+      <div className="max-w-4xl" style={{ margin: '0 auto' }}>
         <div className="flex items-center justify-between mb-12">
           <div>
             <h1 className="text-3xl font-mono mb-2">Rustic Twingo Encoder</h1>
@@ -437,7 +437,10 @@ export default function Home() {
         {renderStepIndicator()}
 
         {error && (
-          <div className="mb-6 p-4 bg-[var(--error)] bg-opacity-10 border border-[var(--error)] text-[var(--error)] font-mono text-sm">
+          <div 
+            className="mb-6 p-4 border border-[var(--error)] text-[var(--error)] font-mono text-sm"
+            style={{ backgroundColor: 'color-mix(in srgb, var(--error) 10%, transparent)' }}
+          >
             <strong>Error:</strong> {error}
           </div>
         )}
