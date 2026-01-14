@@ -45,8 +45,8 @@ while IFS= read -r file; do
   fi
 done <<< "$files"
 
-# Remove empty lines
-files=$(echo -n "$filtered_files" | grep -v '^$')
+# Remove empty lines (|| true to prevent grep exit code 1 from breaking script)
+files=$(echo -n "$filtered_files" | grep -v '^$' || true)
 
 # Build JSON array
 echo -n '{"files":['
