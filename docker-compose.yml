@@ -3,7 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: rustic-twingo-encoder:latest
     container_name: rustic-twingo-encoder
     ports:
       - "3000:3000"
@@ -11,7 +10,7 @@ services:
       # Mount music directory as read-only (source audio files)
       - /home/yodak025/Music:/music:ro
       # Mount outputs directory as read-write (encoded files)
-      - /home/yodak025/Music/outputs:/outputs:rw
+      - /home/yodak025/Music:/outputs:rw
       # Mount Docker-specific config with container paths
       - ./config/config.docker.json:/app/config/config.json:ro
     environment:
