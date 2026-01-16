@@ -16,6 +16,7 @@ export default function Home() {
   const [selectedProfile, setSelectedProfile] = useState('mp3');
   const [profiles, setProfiles] = useState({});
   const [rootDirectory, setRootDirectory] = useState('');
+  const [outputRootDirectory, setOutputRootDirectory] = useState('');
   const [job, setJob] = useState(null);
   const [error, setError] = useState('');
   const [validatingOutput, setValidatingOutput] = useState(false);
@@ -41,6 +42,7 @@ export default function Home() {
       const data = await response.json();
       setProfiles(data.profiles);
       setRootDirectory(data.rootDirectory);
+      setOutputRootDirectory(data.outputRootDirectory);
     } catch (err) {
       setError('Failed to load configuration');
     }
@@ -68,10 +70,11 @@ export default function Home() {
     }
   };
 
-  const handleOutputSelect = async (path) => {
-    const isValid = await validateOutputDirectory(path);
+  const handleOutputSelect = async (relativePath) => {
+    const isValid = await validateOutputDirectory(relativePath);
     if (isValid) {
-      setOutputDirectory(path);
+      // Store relative path, will be converted to absolute when creating job
+      setOutputDirectory(relativePath);
     }
   };
 
@@ -195,11 +198,17 @@ export default function Home() {
         </div>
       )}
 
-      <DirectoryBrowser
-        mode="free"
-        onSelect={handleOutputSelect}
-        initialPath="/"
-      />
+      {!outputRootDirectory ? (
+        <div className="flex justify-center py-8">
+          <Spinner />
+        </div>
+      ) : (
+        <DirectoryBrowser
+          mode="free"
+          onSelect={handleOutputSelect}
+          initialPath=""
+        />
+      )}
 
       {outputDirectory && (
         <div className="mt-6">
@@ -238,11 +247,17 @@ export default function Home() {
         </div>
       )}
 
-      <DirectoryBrowser
-        mode="restricted"
-        onSelect={handleSourceSelect}
-        initialPath=""
-      />
+      {!rootDirectory ? (
+        <div className="flex justify-center py-8">
+          <Spinner />
+        </div>
+      ) : (
+        <DirectoryBrowser
+          mode="restricted"
+          onSelect={handleSourceSelect}
+          initialPath=""
+        />
+      )}
 
       <div className="flex gap-4 mt-6">
         <Button variant="secondary" onClick={() => setCurrentStep(1)} className="flex-1">
@@ -438,8 +453,11 @@ export default function Home() {
 
         {error && (
           <div 
-            className="mb-6 p-4 border border-[var(--error)] text-[var(--error)] font-mono text-sm"
-            style={{ backgroundColor: 'color-mix(in srgb, var(--error) 10%, transparent)' }}
+            className="mb-6 p-4 border border-[var(--error)] font-mono text-sm"
+            style={{ 
+              backgroundColor: 'color-mix(in srgb, var(--error) 10%, transparent)',
+              color: 'var(--error)'
+            }}
           >
             <strong>Error:</strong> {error}
           </div>

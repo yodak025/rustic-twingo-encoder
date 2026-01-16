@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
+import path from 'path';
 import { createJob, getCurrentJob, isEncodingActive } from '@/app/lib/jobManager';
 import { startEncoding } from '@/app/lib/encodingService';
 import { checkDirectoryEmpty } from '@/app/lib/bashExecutor';
+import { getOutputRootDirectory } from '@/app/lib/config';
 
 /**
  * GET /api/jobs
@@ -42,7 +44,7 @@ export async function GET() {
  * Creates a new encoding job and starts the process
  * Body: {
  *   directories: string[],    // Relative paths from rootDirectory
- *   outputDirectory: string,  // Absolute path
+ *   outputDirectory: string,  // Relative path from outputRootDirectory
  *   profile: string          // Profile key (e.g., 'mp3', 'opus')
  * }
  */
@@ -81,8 +83,21 @@ export async function POST(request) {
       );
     }
 
+    // Convert relative outputDirectory to absolute path
+    const outputRootDirectory = getOutputRootDirectory();
+    const absoluteOutputPath = path.join(outputRootDirectory, outputDirectory);
+    const normalizedOutputPath = path.normalize(absoluteOutputPath);
+
+    // Security check: prevent path traversal
+    if (!normalizedOutputPath.startsWith(path.normalize(outputRootDirectory))) {
+      return NextResponse.json(
+        { error: 'Invalid output directory path' },
+        { status: 400 }
+      );
+    }
+
     // Validate output directory is empty
-    const dirCheck = await checkDirectoryEmpty(outputDirectory);
+    const dirCheck = await checkDirectoryEmpty(normalizedOutputPath);
     if (!dirCheck.exists) {
       return NextResponse.json(
         { error: 'Output directory does not exist' },
@@ -96,8 +111,8 @@ export async function POST(request) {
       );
     }
 
-    // Create job
-    const job = createJob(directories, outputDirectory, profile);
+    // Create job with absolute output path
+    const job = createJob(directories, normalizedOutputPath, profile);
 
     // Start encoding in background (don't await)
     startEncoding(job).catch(error => {

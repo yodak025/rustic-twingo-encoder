@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getProfiles, getRootDirectory, getDarkMode } from '@/app/lib/config';
+import { getProfiles, getRootDirectory, getOutputRootDirectory, getDarkMode } from '@/app/lib/config';
 
 /**
  * GET /api/config
@@ -9,11 +9,13 @@ export async function GET() {
   try {
     const profiles = getProfiles();
     const rootDirectory = getRootDirectory();
+    const outputRootDirectory = getOutputRootDirectory();
     const darkMode = getDarkMode();
 
     return NextResponse.json({
       profiles,
       rootDirectory,
+      outputRootDirectory,
       darkMode,
     });
   } catch (error) {

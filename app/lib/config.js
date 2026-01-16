@@ -23,6 +23,10 @@ export function loadConfig() {
       throw new Error('rootDirectory is required in config.json');
     }
 
+    if (!config.outputRootDirectory) {
+      throw new Error('outputRootDirectory is required in config.json');
+    }
+
     if (!config.profiles || Object.keys(config.profiles).length === 0) {
       throw new Error('At least one profile is required in config.json');
     }
@@ -54,6 +58,15 @@ export function getProfiles() {
 export function getRootDirectory() {
   const config = loadConfig();
   return config.rootDirectory;
+}
+
+/**
+ * Get root directory for output browsing
+ * @returns {string} Output root directory path
+ */
+export function getOutputRootDirectory() {
+  const config = loadConfig();
+  return config.outputRootDirectory;
 }
 
 /**

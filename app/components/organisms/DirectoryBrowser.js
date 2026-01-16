@@ -8,7 +8,7 @@ import Spinner from '../atoms/Spinner';
 export default function DirectoryBrowser({ 
   mode = 'restricted', // 'restricted' or 'free'
   onSelect,
-  initialPath = '/'
+  initialPath = ''
 }) {
   const [currentPath, setCurrentPath] = useState(initialPath);
   const [directories, setDirectories] = useState([]);
@@ -26,8 +26,7 @@ export default function DirectoryBrowser({
     
     try {
       const endpoint = mode === 'restricted' ? '/api/directories' : '/api/browse';
-      const queryPath = mode === 'restricted' ? path : path || '/';
-      const response = await fetch(`${endpoint}?path=${encodeURIComponent(queryPath)}`);
+      const response = await fetch(`${endpoint}?path=${encodeURIComponent(path)}`);
       const data = await response.json();
       
       if (data.error) {
@@ -45,18 +44,18 @@ export default function DirectoryBrowser({
   };
 
   const handleNavigate = (dirName) => {
-    const newPath = currentPath === '/' ? `/${dirName}` : `${currentPath}/${dirName}`;
+    const newPath = currentPath === '' ? dirName : `${currentPath}/${dirName}`;
     setCurrentPath(newPath);
   };
 
   const handleNavigateUp = () => {
     const parts = currentPath.split('/').filter(Boolean);
     parts.pop();
-    setCurrentPath(parts.length ? `/${parts.join('/')}` : '/');
+    setCurrentPath(parts.length ? parts.join('/') : '');
   };
 
   const handleSelect = (dirName) => {
-    const fullPath = currentPath === '/' ? `/${dirName}` : `${currentPath}/${dirName}`;
+    const fullPath = currentPath === '' ? dirName : `${currentPath}/${dirName}`;
     if (onSelect) {
       onSelect(fullPath);
     }
@@ -68,17 +67,17 @@ export default function DirectoryBrowser({
     return (
       <div className="flex items-center gap-2 text-sm font-mono mb-4 pb-4 border-b border-[var(--border)]">
         <button
-          onClick={() => setCurrentPath('/')}
+          onClick={() => setCurrentPath('')}
           className="text-[var(--muted)] hover:text-[var(--accent)] transition-colors"
         >
-          /
+          {mode === 'free' ? '📂 Output Root' : '📁 Root'}
         </button>
         {parts.map((part, idx) => (
           <div key={idx} className="flex items-center gap-2">
             <span className="text-[var(--muted)]">→</span>
             <button
               onClick={() => {
-                const newPath = '/' + parts.slice(0, idx + 1).join('/');
+                const newPath = parts.slice(0, idx + 1).join('/');
                 setCurrentPath(newPath);
               }}
               className="text-[var(--foreground)] hover:text-[var(--accent)] transition-colors"
@@ -95,7 +94,7 @@ export default function DirectoryBrowser({
     <Card>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-mono">Browse Directories</h3>
-        {currentPath !== '/' && (
+        {currentPath !== '' && (
           <Button variant="secondary" onClick={handleNavigateUp}>
             ← Back
           </Button>
