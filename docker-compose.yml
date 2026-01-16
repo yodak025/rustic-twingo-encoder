@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  rustic-twingo-encoder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rustic-twingo-encoder:latest
+    container_name: rustic-twingo-encoder
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mount music directory as read-only (source audio files)
+      - /home/yodak025/Music:/music:ro
+      # Mount outputs directory as read-write (encoded files)
+      - /home/yodak025/Music/outputs:/outputs:rw
+      # Mount Docker-specific config with container paths
+      - ./config/config.docker.json:/app/config/config.json:ro
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    # User mapping for correct file permissions (matches host UID:GID)
+    user: "1000:1000"
+    # Resource limits (adjust based on your server)
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
