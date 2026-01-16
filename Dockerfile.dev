@@ -6,23 +6,14 @@ WORKDIR /app
 # Install ffmpeg and bash (required for audio processing)
 RUN apk add --no-cache ffmpeg bash
 
-# Create app user matching host user (use existing group if 1000 already exists)
-RUN addgroup -g 1000 appuser 2>/dev/null || true && \
-    adduser -u 1000 -G $(getent group 1000 | cut -d: -f1) -s /bin/sh -D appuser 2>/dev/null || \
-    adduser -u 1000 -s /bin/sh -D appuser
-
 # Copy package files
-COPY --chown=appuser:appuser package*.json ./
+COPY package*.json ./
 
 # Install all dependencies (including dev dependencies)
 RUN npm install
 
 # Create mount points for volumes
-RUN mkdir -p /music /outputs && \
-    chown appuser:appuser /music /outputs
-
-# Switch to non-root user
-USER appuser
+RUN mkdir -p /music /outputs
 
 # Expose application port
 EXPOSE 3000

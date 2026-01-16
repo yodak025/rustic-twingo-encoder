@@ -24,29 +24,20 @@ WORKDIR /app
 # Install ffmpeg and bash (required for audio processing)
 RUN apk add --no-cache ffmpeg bash
 
-# Create app user for security (use existing group if 1000 already exists)
-RUN addgroup -g 1000 appuser 2>/dev/null || true && \
-    adduser -u 1000 -G $(getent group 1000 | cut -d: -f1) -s /bin/sh -D appuser 2>/dev/null || \
-    adduser -u 1000 -s /bin/sh -D appuser
-
 # Copy built application from builder
-COPY --from=builder --chown=appuser:appuser /app/package*.json ./
-COPY --from=builder --chown=appuser:appuser /app/node_modules ./node_modules
-COPY --from=builder --chown=appuser:appuser /app/.next ./.next
-COPY --from=builder --chown=appuser:appuser /app/public ./public
-COPY --from=builder --chown=appuser:appuser /app/bash ./bash
-COPY --from=builder --chown=appuser:appuser /app/config ./config
-COPY --from=builder --chown=appuser:appuser /app/next.config.mjs ./
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/bash ./bash
+COPY --from=builder /app/config ./config
+COPY --from=builder /app/next.config.mjs ./
 
 # Make bash scripts executable
 RUN chmod +x /app/bash/*.sh
 
 # Create mount points for volumes
-RUN mkdir -p /music /outputs && \
-    chown appuser:appuser /music /outputs
-
-# Switch to non-root user
-USER appuser
+RUN mkdir -p /music /outputs
 
 # Expose application port
 EXPOSE 3000
