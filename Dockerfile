@@ -24,9 +24,10 @@ WORKDIR /app
 # Install ffmpeg and bash (required for audio processing)
 RUN apk add --no-cache ffmpeg bash
 
-# Create app user for security
-RUN addgroup -g 1000 appuser && \
-    adduser -u 1000 -G appuser -s /bin/sh -D appuser
+# Create app user for security (use existing group if 1000 already exists)
+RUN addgroup -g 1000 appuser 2>/dev/null || true && \
+    adduser -u 1000 -G $(getent group 1000 | cut -d: -f1) -s /bin/sh -D appuser 2>/dev/null || \
+    adduser -u 1000 -s /bin/sh -D appuser
 
 # Copy built application from builder
 COPY --from=builder --chown=appuser:appuser /app/package*.json ./
