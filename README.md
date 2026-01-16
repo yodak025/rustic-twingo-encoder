@@ -244,9 +244,7 @@ rustic-twingo-encoder/
 │   └── config.docker.json    # Docker container config
 ├── public/             # Static assets
 ├── Dockerfile          # Production container
-├── Dockerfile.dev      # Development container
 ├── docker-compose.yml  # Production orchestration
-├── docker-compose.dev.yml    # Development orchestration
 ├── DOCKER.md           # Docker deployment guide
 ├── AGENTS.md           # Development guidelines
 └── LICENSE             # GPL-3.0 License

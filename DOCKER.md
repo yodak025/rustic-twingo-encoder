@@ -15,7 +15,7 @@ This guide covers how to deploy Rustic Twingo Encoder using Docker.
 
 2. **Build and run**:
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 
 3. **Access the application**:
@@ -23,22 +23,13 @@ This guide covers how to deploy Rustic Twingo Encoder using Docker.
 
 4. **View logs**:
    ```bash
-   docker-compose logs -f rustic-twingo-encoder
+   docker compose logs -f rustic-twingo-encoder
    ```
 
 5. **Stop the container**:
    ```bash
-   docker-compose down
+   docker compose down
    ```
-
-### Development Mode (with hot-reload)
-
-1. **Start development environment**:
-   ```bash
-   docker-compose -f docker-compose.dev.yml up
-   ```
-
-2. **Code changes will automatically reload** - no rebuild needed
 
 ## Configuration
 
