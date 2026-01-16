@@ -16,8 +16,9 @@ fi
 # List directories only, output as JSON array
 cd "$TARGET_PATH" || exit 1
 
-# Find directories, exclude hidden ones, format as JSON
-dirs=$(find . -maxdepth 1 -mindepth 1 -type d ! -name '.*' -printf '%f\n' | sort)
+# Find directories, exclude hidden ones (BusyBox compatible)
+# Use -exec basename instead of -printf which is GNU-specific
+dirs=$(find . -maxdepth 1 -mindepth 1 -type d ! -name '.*' -exec basename {} \; | sort)
 
 # Build JSON array
 echo -n '{"directories":['
