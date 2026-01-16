@@ -81,9 +81,9 @@ export async function processCueFile(cueFilePath, audioFilePath, outputDir, prof
     // Extract each track
     for (const track of cueData.tracks) {
       try {
-        // Build output filename: "01-AlbumTitle.ext"
+        // Build output filename: "01-TrackTitle.ext"
         const trackNum = String(track.number).padStart(2, '0');
-        const baseName = sanitizeFilename(cueData.albumTitle || 'track');
+        const baseName = sanitizeFilename(track.title || `Track ${track.number}`);
         const outputFileName = `${trackNum}-${baseName}.${profile.extension}`;
         const outputPath = path.join(outputDir, outputFileName);
 
